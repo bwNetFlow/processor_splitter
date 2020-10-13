@@ -10,17 +10,25 @@ import (
 	"os/signal"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var (
 	LogFile = flag.String("log", "./processor_splitter.log", "Location of the log file.")
 
+	KafkaBroker         = flag.String("kafka.brokers", "127.0.0.1:9092,[::1]:9092", "Kafka brokers list separated by commas")
 	KafkaConsumerGroup  = flag.String("kafka.consumer_group", "splitter_debug", "Kafka Consumer Group")
 	KafkaInTopic        = flag.String("kafka.in.topic", "flow-messages-enriched", "Kafka topic to consume from")
 	KafkaOutTopicPrefix = flag.String("kafka.out.topicprefix", "flows", "Kafka topic prefix to produce to, will be prepended to '-$cid'")
-	KafkaBroker         = flag.String("kafka.brokers", "127.0.0.1:9092,[::1]:9092", "Kafka brokers list separated by commas")
 	// TODO: allow splitting on arbitrary fields
 	Cids = flag.String("cids", "100,101,102", "Which Cid topics will be created")
+
+	kafkaUser = flag.String("kafka.user", "", "Kafka username to authenticate with")
+	kafkaPass = flag.String("kafka.pass", "", "Kafka password to authenticate with")
+	//disable kafka tls or auth if set to false
+	KafkaAuthAnon    = flag.Bool("kafka.auth_anon", true, "Set Kafka Auth Anon")
+	KafkaDisableTLS  = flag.Bool("kafka.disable_tls", false, "Whether to use tls or not")
+	KafkaDisableAuth = flag.Bool("kafka.disable_auth", false, "Whether to use auth or not")
 )
 
 func main() {
@@ -48,16 +56,36 @@ func main() {
 	if err != nil {
 		log.Println(err)
 		log.Println("Resuming as user anon.")
-		kafkaConn.SetAuthAnon()
+		// Set kafka auth
+		if *kafkaUser != "" {
+			kafkaConn.SetAuth(*kafkaUser, *kafkaPass)
+		} else {
+			// TODO: make configurable
+			if *KafkaDisableTLS {
+				log.Println("KafkaDisableTLS ...")
+				kafkaConn.DisableTLS()
+			}
+			if *KafkaDisableAuth {
+				log.Println("KafkaDisableAuth ...")
+				kafkaConn.DisableAuth()
+			}
+			if *KafkaAuthAnon {
+				kafkaConn.SetAuthAnon()
+			}
+		}
 	}
 	err = kafkaConn.StartConsumer(*KafkaBroker, []string{*KafkaInTopic}, *KafkaConsumerGroup, -1) // offset -1 is the most recent flow
 	if err != nil {
 		log.Println("StartConsumer:", err)
+		// sleep to make auto restart not too fast and spamming connection retries
+		time.Sleep(5 * time.Second)
 		return
 	}
 	err = kafkaConn.StartProducer(*KafkaBroker)
 	if err != nil {
 		log.Println("StartProducer:", err)
+		// sleep to make auto restart not too fast and spamming connection retries
+		time.Sleep(5 * time.Second)
 		return
 	}
 	defer kafkaConn.Close()
