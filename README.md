@@ -1,5 +1,4 @@
-Splitter
-=
+# Splitter
 
 This is the Splitter component of the [bwNetFlow][bwNetFlow] platform. It
 supports taking protobuf-encoded [flow messages][protobuf] from a specified
@@ -11,8 +10,7 @@ numeric customer ID field `Cid`. It is however a conceivable use case to create
 topics for different protocol numbers or similar, and would have to be
 implemented as a configurable option.
 
-Usage
-====
+## Usage
 
 The simplest call could look like this, which would start the reducer process
 with TLS encryption and SASL auth enabled and all outputs working.
