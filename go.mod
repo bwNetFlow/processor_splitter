@@ -3,6 +3,12 @@ module github.com/bwNetFlow/processor_splitter
 go 1.15
 
 require (
-	github.com/bwNetFlow/kafkaconnector v0.0.0-20200518120843-6e95662de222
-	github.com/bwNetFlow/protobuf/go v0.0.0-20200514124336-bf8695918c8c
+	github.com/Shopify/sarama v1.27.2 // indirect
+	github.com/bwNetFlow/kafkaconnector v0.0.0-20201020151646-77a015fe550e
+	github.com/golang/snappy v0.0.2 // indirect
+	github.com/klauspost/compress v1.11.1 // indirect
+	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
+	golang.org/x/net v0.0.0-20201021035429-f5854403a974 // indirect
+	golang.org/x/sys v0.0.0-20201020230747-6e5568b54d1a // indirect
+	google.golang.org/protobuf v1.25.0 // indirect
 )
