@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/Shopify/sarama v1.27.2 // indirect
-	github.com/bwNetFlow/kafkaconnector v0.0.0-20201020151646-77a015fe550e
+	github.com/bwNetFlow/kafkaconnector v0.0.0-20201022170711-8e1c6bdf17c1
 	github.com/golang/snappy v0.0.2 // indirect
 	github.com/klauspost/compress v1.11.1 // indirect
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
