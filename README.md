@@ -1,46 +1,32 @@
-splitter
-==
+Splitter
+=
 
-This is a small Kafka Processor, i.e. a Consumer and a Producer, which supports
-splitting a stream of Protobuf messages in one Topic based on a single Protobuf
-field. The intention is to split the main Flow Topic into customer-specific
-Topics, each with custom Kafka ACLs to enable representatives
-of the customer to access their specific feed.
-Right now, the Splitter works only on the `Cid` (Customer ID) field, and limits
-its output to customer IDs provided using the CLI flag.
+This is the Splitter component of the [bwNetFlow][bwNetFlow] platform. It
+supports taking protobuf-encoded [flow messages][protobuf] from a specified
+Kafka topic, splitting it along its customer ID field, and writing the result
+back into a number of Kafka topic in accordings with the customer ID.
+
+This processor currently assumes that the only relevant split is along the
+numeric customer ID field `Cid`. It is however a conceivable use case to create
+topics for different protocol numbers or similar, and would have to be
+implemented as a configurable option.
 
 Usage
 ====
-First, have the proper environment variables set for authenticating with your Kafka Cluster:
 
-`KAFKA_SASL_USER=splitter KAFKA_SASL_PASS=somesecurepass`
+The simplest call could look like this, which would start the reducer process
+with TLS encryption and SASL auth enabled and all outputs working.
 
-Note the splitter user must have Produce priviledges on any topic it might produce to.
-
-
-As standalone command:
-
-`./splitter --kafka.brokers "broker01:9093,broker02:9093" --kafka.in.topic flow-messages-enriched --kafka.out.topicprefix flows --kafka.consumer_group splitter-dev --cids "100,101,102" # will create flows-100, flows-101, ... topics`
-
-
-Using Systemd:
 ```
-[Unit]
-Description=Default kafka-processor Splitter process
-After=network.target
-
-[Service]
-EnvironmentFile=/opt/kafka-processor-splitter/config/authdata
-User=kafka-processor-splitter
-WorkingDirectory=/opt/kafka-processor-splitter
-ExecStart=/opt/kafka-processor-splitter/splitter --kafka.brokers "broker01:9093,broker02:9093" --kafka.in.topic flow-messages-enriched --kafka.out.topicprefix flows --kafka.consumer_group processor-splitter --cids 100,101,102
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
+export KAFKA_SASL_USER=prod-splitter
+export KAFKA_SASL_PASS=somesecurepass`
+./splitter \
+        --kafka.brokers=kafka.local:9093 \
+        --kafka.in.topic=flows-enriched \
+        --kafka.out.topicprefix=flows-customer \
+        --kafka.consumer_group=splitter-prod \
+        --cids "100,101,102" # will create only flows-customer-100, ... topics`
 ```
 
-TODOs
-====
-
- * support different Protobuf fields for splitting on
+[bwNetFlow]: https://github.com/bwNetFlow/bwNetFlow
+[protobuf]: https://github.com/bwNetFlow/protobuf
